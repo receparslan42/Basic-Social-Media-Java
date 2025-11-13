@@ -1,6 +1,7 @@
 package com.receparslan.basicsocialmedia.views;
 
-import android.Manifest;
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -57,15 +59,22 @@ public class PostActivity extends AppCompatActivity {
     // Model
     private Post post;
 
+    private final ActivityResultLauncher<PickVisualMediaRequest> pickMediaLauncher = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+        if (uri != null) {
+            post.setImageUri(uri);
+            if (post.getImageUri() != null)
+                selectedImageView.setImageURI(post.getImageUri());
+        }
+    });
+
     // Activity Result Launcher for selecting image from gallery
-    private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+    private final ActivityResultLauncher<Intent> legacyGalleryLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         if (result.getResultCode() == RESULT_OK) {
             Intent intentFromResult = result.getData();
             if (intentFromResult != null) {
                 post.setImageUri(intentFromResult.getData());
-                if (post.getImageUri() != null) {
+                if (post.getImageUri() != null)
                     selectedImageView.setImageURI(post.getImageUri());
-                }
             }
         }
     });
@@ -75,7 +84,7 @@ public class PostActivity extends AppCompatActivity {
         if (isGranted) {
             // Permission is granted
             Intent intentToGallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            activityResultLauncher.launch(intentToGallery);
+            legacyGalleryLauncher.launch(intentToGallery);
         } else {
             // Permission is denied
             Toast.makeText(this, "Permission is required to access the gallery.", Toast.LENGTH_LONG).show();
@@ -117,11 +126,10 @@ public class PostActivity extends AppCompatActivity {
 
     // Method to select image from gallery
     private void setSelectedImageView(View view) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requestPermission(view, android.Manifest.permission.READ_MEDIA_IMAGES);
-        } else {
-            requestPermission(view, Manifest.permission.READ_EXTERNAL_STORAGE);
-        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            pickMediaLauncher.launch(new PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE).build());
+        else
+            requestPermission(view);
     }
 
     // Method to upload the post
@@ -176,14 +184,14 @@ public class PostActivity extends AppCompatActivity {
     }
 
     // Method to request permission to access the gallery
-    private void requestPermission(View view, String permission) {
-        if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
+    private void requestPermission(View view) {
+        if (ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             Intent intentToGallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            activityResultLauncher.launch(intentToGallery);
-        } else if (shouldShowRequestPermissionRationale(permission)) {
-            Snackbar.make(view, "Permission is required to access the gallery.", Snackbar.LENGTH_LONG).setAction("Allow", v -> requestPermissionLauncher.launch(permission)).show();
+            legacyGalleryLauncher.launch(intentToGallery);
+        } else if (shouldShowRequestPermissionRationale(READ_EXTERNAL_STORAGE)) {
+            Snackbar.make(view, "Permission is required to access the gallery.", Snackbar.LENGTH_LONG).setAction("Allow", v -> requestPermissionLauncher.launch(READ_EXTERNAL_STORAGE)).show();
         } else {
-            requestPermissionLauncher.launch(permission);
+            requestPermissionLauncher.launch(READ_EXTERNAL_STORAGE);
         }
     }
 
