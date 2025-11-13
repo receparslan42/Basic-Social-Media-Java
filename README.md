@@ -43,12 +43,9 @@ screenshots/ (static preview images)
 ```
 
 ## Screenshots
-<p>
-  <img src="screenshots/login_screen.jpg" alt="Login Screen" width="1080" />
-  <img src="screenshots/register_screen.jpg" alt="Register Screen" width="1080" />
-  <img src="screenshots/main_screen.jpg" alt="Main Feed" width="1080" />
-  <img src="screenshots/post_screen.jpg" alt="Create Post" width="1080" />
-</p>
+| Login                                                                    | Register                                                                       | Home Page                                                            | Create Post                                                            |
+|--------------------------------------------------------------------------|--------------------------------------------------------------------------------|----------------------------------------------------------------------|------------------------------------------------------------------------|
+| <img src="screenshots/login_screen.jpg" alt="Login Screen" width="225"/> | <img src="screenshots/register_screen.jpg" alt="Register Screen" width="225"/> | <img src="screenshots/main_screen.jpg" alt="Home Page" width="225"/> | <img src="screenshots/post_screen.jpg" alt="Create Post" width="225"/> |
 
 ## Getting Started
 ### 1. Prerequisites
